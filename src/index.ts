@@ -42,7 +42,9 @@ export default {
         }
 
         const response = await env.AI.run("@cf/openai/gpt-oss-20b", {
-          messages
+          messages,
+          max_tokens: 1024,
+          reasoning_effort: "low"
         });
 
         return json({ success: true, response });
