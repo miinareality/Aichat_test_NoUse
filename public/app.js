@@ -76,13 +76,13 @@ form.addEventListener("submit", async (event) => {
     const aiResponse = data.response;
     let answer = "";
 
-    if (aiResponse?.choices?.[0]?.message?.content) {
-      answer = aiResponse.choices[0].message.content;
-    } else if (typeof aiResponse?.response === "string") {
-      answer = aiResponse.response;
-    } else {
-      answer = JSON.stringify(aiResponse, null, 2);
-    }
+if (typeof aiResponse?.choices?.[0]?.message?.content === "string") {
+  answer = aiResponse.choices[0].message.content;
+} else if (typeof aiResponse?.response === "string") {
+  answer = aiResponse.response;
+} else {
+  answer = "申し訳ありません。AIが回答を生成できませんでした。もう一度お試しください。";
+}
 
     messages.push({ role: "assistant", content: answer });
     addMessage("assistant", answer);
