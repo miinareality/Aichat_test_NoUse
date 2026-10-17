@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">AI Chat</div>
+      <button id="clearButton" class="clear-button">新しいチャット</button>
+    </header>
+
+    <main id="chat" class="chat">
+      <div class="welcome">
+        <h1>AI Chat</h1>
+        <p>何でも質問してください。</p>
+      </div>
+    </main>
+
+    <form id="chatForm" class="input-area">
+      <div class="input-box">
+        <textarea id="messageInput" placeholder="メッセージを入力..." rows="1" autocomplete="off"></textarea>
+        <button id="sendButton" type="submit" aria-label="送信">↑</button>
+      </div>
+      <div class="notice">AIの回答は必ずしも正確とは限りません。</div>
+    </form>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
