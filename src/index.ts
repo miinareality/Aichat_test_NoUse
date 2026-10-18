@@ -12,15 +12,23 @@ interface ChatRequest {
   messages: ChatMessage[];
 }
 
+interface WebSearchItem {
+  title?: string;
+  url?: string;
+  description?: string;
+}
+
+interface WebSearchResponse {
+  items?: WebSearchItem[];
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    /*
-     * =========================
-     * AI Chat API
-     * =========================
-     */
+    // =========================
+    // AI Chat API
+    // =========================
     if (url.pathname === "/api/chat") {
       if (request.method !== "POST") {
         return json(
@@ -57,15 +65,15 @@ export default {
           );
         }
 
-        /*
-         * =========================
-         * 最新のユーザーメッセージ
-         * =========================
-         */
+        // =========================
+        // 最新のユーザーメッセージ
+        // =========================
 
         const lastUserMessage = [...messages]
           .reverse()
-          .find((message) => message.role === "user");
+          .find(
+            (message) => message.role === "user"
+          );
 
         if (!lastUserMessage) {
           return json(
@@ -74,23 +82,20 @@ export default {
           );
         }
 
-        /*
-         * =========================
-         * Web Search
-         * =========================
-         *
-         * ユーザーの質問をインターネット検索
-         */
+        // =========================
+        // Web Search
+        // =========================
 
         let webSearchText = "";
 
         try {
-const searchResponse = await env.AI.websearch({
-  gatewayId: "default",
-  query: lastUserMessage.content,
-  provider: "ceramic",
-  limit: 5
-});
+          const searchResponse =
+            await env.AI.websearch({
+              gatewayId: "default",
+              query: lastUserMessage.content,
+              provider: "ceramic",
+              limit: 5
+            });
 
           const searchResult =
             (await searchResponse.json()) as WebSearchResponse;
@@ -99,70 +104,64 @@ const searchResponse = await env.AI.websearch({
             searchResult &&
             Array.isArray(searchResult.items)
           ) {
-            webSearchText = searchResult.items
-              .map((item, index) => {
-                return [
-                  `検索結果 ${index + 1}`,
-                  `タイトル: ${item.title ?? ""}`,
-                  `URL: ${item.url ?? ""}`,
-                  `内容: ${item.description ?? ""}`
-                ].join("\n");
-              })
-              .join("\n\n");
+            webSearchText =
+              searchResult.items
+                .map((item, index) => {
+                  return [
+                    `検索結果 ${index + 1}`,
+                    `タイトル: ${item.title ?? ""}`,
+                    `URL: ${item.url ?? ""}`,
+                    `内容: ${item.description ?? ""}`
+                  ].join("\n");
+                })
+                .join("\n\n");
           }
-catch (searchError) {
-  console.error("Web Search Error:", searchError);
+        } catch (searchError) {
+          console.error(
+            "Web Search Error:",
+            searchError
+          );
 
-  return json(
-    {
-      error: "Web Search failed",
-      details: String(searchError)
-    },
-    502
-  );
-}
-
-          /*
-           * Web検索に失敗しても、
-           * 通常のAIチャットとして動作させる。
-           */
+          return json(
+            {
+              error: "Web Search failed",
+              details: String(searchError)
+            },
+            502
+          );
         }
 
-        /*
-         * =========================
-         * AIに渡すメッセージ
-         * =========================
-         */
+        // =========================
+        // AIに渡すシステムメッセージ
+        // =========================
 
         const systemMessage: ChatMessage = {
           role: "system",
           content: `
 あなたはユーザー専用のAIアシスタントです。
 
-回答は基本的に日本語で行ってください。
+基本的に日本語で回答してください。
 
 インターネット検索結果が提供されている場合、
 その情報を参考にして回答してください。
 
-検索結果に書かれていない情報を、
+最新情報について質問された場合は、
+検索結果を優先してください。
+
+検索結果にない情報を、
 検索結果に書かれているかのように断定しないでください。
 
-最新情報について質問された場合は、
-Web検索結果を優先してください。
-
-検索結果に関連するURLがある場合、
-回答の最後に「参考情報」としてURLを表示してください。
+検索結果にURLがある場合は、
+回答の最後に参考情報としてURLを表示してください。
 
 Web検索結果:
-${webSearchText || "今回の検索では結果を取得できませんでした。"}
+${webSearchText || "検索結果はありませんでした。"}
 `
         };
 
-        /*
-         * =========================
-         * Workers AI
-         * =========================
-         */
+        // =========================
+        // Workers AI
+        // =========================
 
         const response = await env.AI.run(
           "@cf/openai/gpt-oss-20b",
@@ -180,50 +179,35 @@ ${webSearchText || "今回の検索では結果を取得できませんでした
           success: true,
           response
         });
+
       } catch (error) {
-        console.error("Chat Error:", error);
+        console.error(
+          "Chat Error:",
+          error
+        );
 
         return json(
           {
-            error:
-              "AI request failed"
+            error: "AI request failed",
+            details: String(error)
           },
           500
         );
       }
     }
 
-    /*
-     * =========================
-     * Webサイト
-     * =========================
-     */
+    // =========================
+    // Webサイト
+    // =========================
 
     return env.ASSETS.fetch(request);
   }
 } satisfies ExportedHandler<Env>;
 
-/*
- * =========================
- * Web Searchのレスポンス型
- * =========================
- */
 
-interface WebSearchItem {
-  title?: string;
-  url?: string;
-  description?: string;
-}
-
-interface WebSearchResponse {
-  items?: WebSearchItem[];
-}
-
-/*
- * =========================
- * JSON Response
- * =========================
- */
+// =========================
+// JSON Response
+// =========================
 
 function json(
   data: unknown,
