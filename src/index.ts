@@ -26,15 +26,9 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    // =========================
-    // AI Chat API
-    // =========================
     if (url.pathname === "/api/chat") {
       if (request.method !== "POST") {
-        return json(
-          { error: "Method Not Allowed" },
-          405
-        );
+        return json({ error: "Method Not Allowed" }, 405);
       }
 
       try {
@@ -65,10 +59,6 @@ export default {
           );
         }
 
-        // =========================
-        // 最新のユーザーメッセージ
-        // =========================
-
         const lastUserMessage = [...messages]
           .reverse()
           .find(
@@ -82,20 +72,16 @@ export default {
           );
         }
 
-        // =========================
         // Web Search
-        // =========================
-
         let webSearchText = "";
 
         try {
-          const searchResponse =
-            await env.AI.websearch({
-              gatewayId: "default",
-              query: lastUserMessage.content,
-              provider: "ceramic",
-              limit: 5
-            });
+          const searchResponse = await env.AI.websearch({
+            gatewayId: "default",
+            query: lastUserMessage.content,
+            provider: "ceramic",
+            limit: 5
+          });
 
           const searchResult =
             (await searchResponse.json()) as WebSearchResponse;
@@ -104,17 +90,16 @@ export default {
             searchResult &&
             Array.isArray(searchResult.items)
           ) {
-            webSearchText =
-              searchResult.items
-                .map((item, index) => {
-                  return [
-                    `検索結果 ${index + 1}`,
-                    `タイトル: ${item.title ?? ""}`,
-                    `URL: ${item.url ?? ""}`,
-                    `内容: ${item.description ?? ""}`
-                  ].join("\n");
-                })
-                .join("\n\n");
+            webSearchText = searchResult.items
+              .map((item, index) => {
+                return [
+                  `検索結果 ${index + 1}`,
+                  `タイトル: ${item.title ?? ""}`,
+                  `URL: ${item.url ?? ""}`,
+                  `内容: ${item.description ?? ""}`
+                ].join("\n");
+              })
+              .join("\n\n");
           }
         } catch (searchError) {
           console.error(
@@ -131,10 +116,7 @@ export default {
           );
         }
 
-        // =========================
-        // AIに渡すシステムメッセージ
-        // =========================
-
+        // AIへのシステムメッセージ
         const systemMessage: ChatMessage = {
           role: "system",
           content: `
@@ -155,14 +137,12 @@ export default {
 回答の最後に参考情報としてURLを表示してください。
 
 Web検索結果:
+
 ${webSearchText || "検索結果はありませんでした。"}
 `
         };
 
-        // =========================
         // Workers AI
-        // =========================
-
         const response = await env.AI.run(
           "@cf/openai/gpt-oss-20b",
           {
@@ -196,18 +176,9 @@ ${webSearchText || "検索結果はありませんでした。"}
       }
     }
 
-    // =========================
-    // Webサイト
-    // =========================
-
     return env.ASSETS.fetch(request);
   }
 } satisfies ExportedHandler<Env>;
-
-
-// =========================
-// JSON Response
-// =========================
 
 function json(
   data: unknown,
