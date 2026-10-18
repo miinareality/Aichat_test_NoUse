@@ -85,12 +85,12 @@ export default {
         let webSearchText = "";
 
         try {
-          const searchResponse = await env.AI.websearch({
-            gatewayId: "default",
-            query: lastUserMessage.content,
-            provider: "exa",
-            limit: 5
-          });
+const searchResponse = await env.AI.websearch({
+  gatewayId: "default",
+  query: lastUserMessage.content,
+  provider: "ceramic",
+  limit: 5
+});
 
           const searchResult =
             (await searchResponse.json()) as WebSearchResponse;
