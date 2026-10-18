@@ -2,10 +2,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "aichat-test-nouse",
   "main": "src/index.ts",
-  "compatibility_date": "2026-10-16",
+  "compatibility_date": "2026-10-17",
 
   "ai": {
-    "binding": "AI"
+    "binding": "AI",
+    "remote": true
   },
 
   "assets": {
