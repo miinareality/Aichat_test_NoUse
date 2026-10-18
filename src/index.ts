@@ -70,6 +70,10 @@ export default {
 
       const searchResults =
         await searchResponse.json();
+      console.log(
+  "WEB SEARCH RESULT:",
+  JSON.stringify(searchResults)
+);
 
       // =========================
       // Workers AI
