@@ -110,11 +110,17 @@ export default {
               })
               .join("\n\n");
           }
-        } catch (searchError) {
-          console.error(
-            "Web Search Error:",
-            searchError
-          );
+catch (searchError) {
+  console.error("Web Search Error:", searchError);
+
+  return json(
+    {
+      error: "Web Search failed",
+      details: String(searchError)
+    },
+    502
+  );
+}
 
           /*
            * Web検索に失敗しても、
