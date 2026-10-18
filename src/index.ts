@@ -61,12 +61,13 @@ export default {
       // Web Search
       // =========================
 
-      const searchResponse = await env.AI.websearch({
-        gatewayId: "default",
-        query: lastMessage.content,
-        provider: "ceramic",
-        limit: 5
-      });
+const searchResponse = await env.AI.websearch({
+  gatewayId: "default",
+  query: lastMessage.content,
+  provider: "exa",
+  byokAlias: "default",
+  limit: 5
+});
 
       const searchResults =
         await searchResponse.json();
